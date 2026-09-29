@@ -7610,7 +7610,9 @@ async def dm_get_pubkey(
             from services.mesh.mesh_wormhole_prekey import fetch_dm_prekey_bundle
 
             preferred_lookup_peer = str(lookup_peer_url or "").strip().rstrip("/")
-            remote_bundle = fetch_dm_prekey_bundle(
+            # Off the event loop: the fleet lookup makes blocking network calls.
+            remote_bundle = await asyncio.to_thread(
+                fetch_dm_prekey_bundle,
                 agent_id="",
                 lookup_token=resolved_lookup,
                 lookup_peer_urls=[preferred_lookup_peer] if preferred_lookup_peer else None,
@@ -7700,7 +7702,9 @@ async def dm_get_prekey_bundle(
         )
     resolved_id, resolved_lookup = _preferred_dm_lookup_target(agent_id, lookup_token)
     preferred_lookup_peer = str(lookup_peer_url or "").strip().rstrip("/")
-    result = fetch_dm_prekey_bundle(
+    # Off the event loop: the fleet lookup makes blocking network calls.
+    result = await asyncio.to_thread(
+        fetch_dm_prekey_bundle,
         agent_id=resolved_id,
         lookup_token=resolved_lookup,
         lookup_peer_urls=[preferred_lookup_peer] if preferred_lookup_peer else None,
